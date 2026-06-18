@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Portfolio</title>
+    <style>
+        :root {
+            --primary: #0f1419;
+            --secondary: #1a2332;
+            --accent: #e8e8e8;
+            --accent-subtle: #8b8b8b;
+            --highlight: #ffffff;
+            --border: #2d3744;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: var(--primary);
+            color: var(--accent);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        header {
+            padding: 2rem 2rem 3rem 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(180deg, var(--secondary) 0%, var(--primary) 100%);
+            animation: slideDown 0.8s ease-out;
+        }
+
+        .logo {
+            max-width: 220px;
+            height: auto;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            animation: fadeInLogo 0.8s ease-out 0.2s forwards;
+        }
+
+        @keyframes fadeInLogo {
+            from { opacity: 0; transform: scale(0.95); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            color: var(--highlight);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--accent-subtle);
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .projects {
+            display: grid;
+            gap: 3rem;
+            margin-bottom: 4rem;
+        }
+
+        .project-group {
+            animation: fadeInUp 0.8s ease-out backwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .project-group:nth-child(1) { animation-delay: 0.1s; }
+        .project-group:nth-child(2) { animation-delay: 0.2s; }
+        .project-group:nth-child(3) { animation-delay: 0.3s; }
+        .project-group:nth-child(4) { animation-delay: 0.4s; }
+        .project-group:nth-child(5) { animation-delay: 0.5s; }
+
+        .org-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--highlight);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--accent);
+            display: inline-block;
+            letter-spacing: 0.5px;
+        }
+
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .videos-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 0;
+        }
+
+        /* ── Video card / thumbnail ── */
+        .video-card {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .video-card:hover .play-btn {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        /* thumbnail wrapper */
+        .thumb-wrap {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .thumb-wrap img {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: opacity 0.3s;
+        }
+
+        .video-card:hover .thumb-wrap img {
+            opacity: 0.75;
+        }
+
+        /* play button overlay */
+        .play-btn {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .play-btn svg {
+            width: 20px; height: 20px;
+            fill: #fff;
+            margin-left: 3px; /* optical centering */
+        }
+
+        .video-info {
+            padding: 1.25rem 1.5rem;
+        }
+
+        .video-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--highlight);
+            line-height: 1.3;
+        }
+
+        /* ── Lightbox ── */
+        .lightbox-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            animation: lbFadeIn 0.2s ease;
+        }
+
+        .lightbox-overlay.active {
+            display: flex;
+        }
+
+        @keyframes lbFadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        .lightbox-inner {
+            position: relative;
+            width: 100%;
+            max-width: 1100px;
+            animation: lbSlideUp 0.25s ease;
+        }
+
+        @keyframes lbSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .lightbox-video-wrap {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .lightbox-video-wrap iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: none;
+        }
+
+        .lightbox-title {
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--accent);
+            text-align: center;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: -2.75rem;
+            right: 0;
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-size: 2rem;
+            line-height: 1;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .lightbox-close:hover { opacity: 1; }
+
+        /* ── Two-column feature ── */
+        .two-column-feature {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .videos-grid-3 { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            header { padding: 2rem 1rem; }
+            main { padding: 2rem 1rem; }
+
+            .videos-grid,
+            .two-column-feature {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .videos-grid-3 {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .project-group { margin-bottom: 2rem; }
+
+            .lightbox-overlay { padding: 1rem; }
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 2rem;
+            text-align: center;
+            color: var(--accent-subtle);
+            font-size: 0.9rem;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-subtle); }
+    </style>
+</head>
+<body>
+
+    <!-- ── Lightbox ── -->
+    <div class="lightbox-overlay" id="lightbox" role="dialog" aria-modal="true" aria-label="Video player">
+        <div class="lightbox-inner">
+            <button class="lightbox-close" id="lightbox-close" aria-label="Close video">&#x2715;</button>
+            <div class="lightbox-video-wrap">
+                <iframe id="lightbox-iframe"
+                    src=""
+                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
+                    allowfullscreen>
+                </iframe>
+            </div>
+            <p class="lightbox-title" id="lightbox-title"></p>
+        </div>
+    </div>
+
+    <header>
+        <img src="https://res.cloudinary.com/dvltssfeh/image/upload/v1781797921/BH_Logo_final_wht_2_jcf0b5.svg" alt="Beacon Behavioral Health Logo" class="logo">
+        <h1>Beacon Behavioral Health Associates, PLLC</h1>
+
+    </header>
+
+    <main>
+        <section class="projects">
+
+            <!-- Concord Hospital -->
+            <div class="project-group">
+                <h2 class="org-title">Concord Hospital</h2>
+                <div class="videos-grid" style="margin-bottom: 2rem;">
+                    <div class="video-card"
+                         data-vimeo-id="1064818742"
+                         data-vimeo-src="https://player.vimeo.com/video/1064818742?badge=0&autopause=0&autoplay=1&player_id=0&app_id=58479"
+                         data-title="People are Talking">
+                        <div class="thumb-wrap">
+                            <img src="https://vumbnail.com/1064818742.jpg" alt="People are Talking thumbnail" loading="lazy">
+                            <div class="play-btn">
+                                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3 class="video-title">People are Talking</h3>
+                        </div>
+                    </div>
+
+                    <div class="video-card"
+                         data-vimeo-src="https://player.vimeo.com/video/1032889549?badge=0&autopause=0&autoplay=1&player_id=0&app_id=58479"
+                         data-title="Give it a Shot">
+                        <div class="thumb-wrap">
+                            <img src="https://vumbnail.com/1032889549.jpg" alt="Give it a Shot thumbnail" loading="lazy">
+                            <div class="play-btn">
+                                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3 class="video-title">Give it a Shot</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="videos-grid-3">
+                    <div class="video-card"
+                         data-vimeo-src="https://player.vimeo.com/video/1037893751?badge=0&autopause=0&autoplay=1&player_id=0&app_id=58479"
+                         data-title="Team Spotlight">
+                        <div class="thumb-wrap">
+                            <img src="https://vumbnail.com/1037893751.jpg" alt="Team Spotlight thumbnail" loading="lazy">
+                            <div class="play-btn">
+                                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3 class="video-title">Team Spotlight</h3>
+                        </div>
+                    </div>
+
+                    <div class="video-card"
+                         data-vimeo-src="https://player.vimeo.com/video/1079447112?h=082a5f34b7&badge=0&autopause=0&autoplay=1&player_id=0&app_id=58479"
+                         data-title="CHHS Brand Video">
+                        <div class="thumb-wrap">
+                            <img src="https://vumbnail.com/1079447112.jpg" alt="CHHS Brand Video thumbnail" loading="lazy">
+                            <div class="play-btn">
+                                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3 class="video-title">CHHS Brand Video</h3>
+                        </div>
+                    </div>
+
+                    <div class="video-card"
+                         data-vimeo-src="https://player.vimeo.com/video/1064815970?badge=0&autopause=0&autoplay=1&player_id=0&app_id=58479"
+                         data-title="Enroute">
+                        <div class="thumb-wrap">
+                            <img src="https://vumbnail.com/1064815970.jpg" alt="Enroute thumbnail" loading="lazy">
+                            <div class="play-btn">
+                                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3 class="video-title">Enroute</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LRCC -->
+            <div class="project-group">
+                <h2 class="org-title">LRCC</h2>
+                <div class="videos-grid">
+                    <div class="video-card"
+                         data-vimeo-src="https://player.vimeo.com/video/1194391009?badge=0&autopause=0&autoplay=1&player_id=0&app_id=58479"
+                         data-title="LRCC Liberal Arts">
+                        <div class="thumb-wrap">
+                            <img src="https://vumbnail.com/1194391009.jpg" alt="LRCC Liberal Arts thumbnail" loading="lazy">
+                            <div class="play-btn">
+                                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3 class="video-title">Liberal Arts</h3>
+                        </div>
+                    </div>
+
+                    <div class="video-card"
+                         data-vimeo-src="https://player.vimeo.com/video/1194390941?badge=0&autopause=0&autoplay=1&player_id=0&app_id=58479"
+                         data-title="LRCC Workforce">
+                        <div class="thumb-wrap">
+                            <img src="https://vumbnail.com/1194390941.jpg" alt="LRCC Workforce thumbnail" loading="lazy">
+                            <div class="play-btn">
+                                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3 class="video-title">Workforce</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Anticoagulation Forum + Waters -->
+            <div class="project-group">
+                <div class="videos-grid">
+                    <div>
+                        <h2 class="org-title">Anticoagulation Forum</h2>
+                        <div class="video-card"
+                             data-vimeo-src="https://player.vimeo.com/video/913717810?badge=0&autopause=0&autoplay=1&player_id=0&app_id=58479"
+                             data-title="Anticoagulation Forum">
+                            <div class="thumb-wrap">
+                                <img src="https://vumbnail.com/913717810.jpg" alt="Anticoagulation Forum thumbnail" loading="lazy">
+                                <div class="play-btn">
+                                    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                </div>
+                            </div>
+                            <div class="video-info">
+                                <h3 class="video-title">Social Determinants of Health</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h2 class="org-title">Waters</h2>
+                        <div class="video-card"
+                             data-vimeo-src="https://player.vimeo.com/video/985956979?badge=0&autopause=0&autoplay=1&player_id=0&app_id=58479"
+                             data-title="Waters">
+                            <div class="thumb-wrap">
+                                <img src="https://vumbnail.com/985956979.jpg" alt="Waters thumbnail" loading="lazy">
+                                <div class="play-btn">
+                                    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                </div>
+                            </div>
+                            <div class="video-info">
+                                <h3 class="video-title">Waters</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CCSNH -->
+            <div class="project-group">
+                <h2 class="org-title">CCSNH</h2>
+                <div class="videos-grid">
+                    <div class="video-card"
+                         data-vimeo-src="https://player.vimeo.com/video/841896620?badge=0&autopause=0&autoplay=1&player_id=0&app_id=58479"
+                         data-title="Choose Community">
+                        <div class="thumb-wrap">
+                            <img src="https://vumbnail.com/841896620.jpg" alt="Choose Community thumbnail" loading="lazy">
+                            <div class="play-btn">
+                                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3 class="video-title">Choose Community</h3>
+                        </div>
+                    </div>
+
+                    <div class="video-card"
+                         data-vimeo-src="https://player.vimeo.com/video/885764508?badge=0&autopause=0&autoplay=1&player_id=0&app_id=58479"
+                         data-title="Roll Call">
+                        <div class="thumb-wrap">
+                            <img src="https://vumbnail.com/885764508.jpg" alt="Roll Call thumbnail" loading="lazy">
+                            <div class="play-btn">
+                                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3 class="video-title">Roll Call</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Big House Partners. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const overlay   = document.getElementById('lightbox');
+        const iframe    = document.getElementById('lightbox-iframe');
+        const titleEl   = document.getElementById('lightbox-title');
+        const closeBtn  = document.getElementById('lightbox-close');
+
+        function openLightbox(src, title) {
+            iframe.src = src;
+            titleEl.textContent = title;
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            overlay.classList.remove('active');
+            iframe.src = '';
+            document.body.style.overflow = '';
+        }
+
+        // ── Thumbnail loading via Vimeo oEmbed ──
+        function vimeoIdFromSrc(src) {
+            const match = src.match(/vimeo\.com\/video\/(\d+)/);
+            return match ? match[1] : null;
+        }
+
+        async function loadThumbnail(card) {
+            const img = card.querySelector('.thumb-wrap img');
+            if (!img) return;
+            const id = vimeoIdFromSrc(card.dataset.vimeoSrc);
+            if (!id) return;
+            try {
+                const res = await fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${id}&width=800`);
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data.thumbnail_url) {
+                    const hd = data.thumbnail_url
+                        .replace(/_\d+x\d+(\.\w+)$/, '_1280x720$1')
+                        .replace(/\?.*$/, '');
+                    img.src = hd;
+                }
+            } catch (e) {
+                // fall back to vumbnail silently
+            }
+        }
+
+        // Card clicks
+        document.querySelectorAll('.video-card').forEach(card => {
+            loadThumbnail(card);
+
+            card.addEventListener('click', () => {
+                openLightbox(card.dataset.vimeoSrc, card.dataset.title);
+            });
+            // keyboard support
+            card.setAttribute('tabindex', '0');
+            card.setAttribute('role', 'button');
+            card.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openLightbox(card.dataset.vimeoSrc, card.dataset.title);
+                }
+            });
+        });
+
+        // Close button
+        closeBtn.addEventListener('click', closeLightbox);
+
+        // Click outside inner content
+        overlay.addEventListener('click', e => {
+            if (e.target === overlay) closeLightbox();
+        });
+
+        // Escape key
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+    </script>
+</body>
+</html>
